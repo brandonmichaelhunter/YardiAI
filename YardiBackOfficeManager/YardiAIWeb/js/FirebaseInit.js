@@ -7,4 +7,4 @@ var config = {
     storageBucket: "yardiai-4ca2b.appspot.com",
     messagingSenderId: "295023850130"
 };
-firebase.initializeApp(config);
+firebase.initializeApp(config); 
