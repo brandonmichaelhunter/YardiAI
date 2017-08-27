@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>YardAI - Your best friend while doing yard work</title>
+      <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.js"></script>
+    <script src="js/FirebaseInit.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/logo-nav.css" rel="stylesheet">
+      <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.css" />
+
+      <script type="text/javascript">
+          initApp = function () {
+
+              firebase.auth().onAuthStateChanged(function (user) {
+                  if (user) {
+
+                      usr = user;
+                      console.log("User is: " + usr.uid)
+                      // User is signed in.
+                      var displayName = user.displayName;
+                      var email = user.email;
+                      var emailVerified = user.emailVerified;
+                      var photoURL = user.photoURL;
+                      var uid = user.uid;
+                      var phoneNumber = user.phoneNumber;
+                      var providerData = user.providerData;
+
+                      user.getToken().then(function (accessToken) {
+                          document.getElementById('sign-in-status').textContent = 'Welcome ' + user.displayName;
+                          btnSignOut = document.getElementById('btnSignOut');
+
+                          imgUserPhoto = document.getElementById('imgUserPhoto');
+                          if (imgUserPhoto != null || imgUserPhoto != undefined) {
+                              imgUserPhoto.alt = user.displayName;
+                              imgUserPhoto.src = user.photoURL;
+                          }
+                         
+                      });
+                      return usr;
+                  } else {
+                      
+                      // User is signed out.
+                      window.location.href = "index.html";
+                      btnSignOut.style.display = 'none';
+                      //document.getElementById('sign-in-status').textContent = 'Signed out';
+                      //document.getElementById('sign-in').textContent = 'Sign in';
+                      //document.getElementById('account-details').textContent = 'null';
+                  }
+              }, function (error) {
+                  console.log(error);
+              });
+          };
+          function SignOut() {
+              firebase.auth().signOut();
+          }
+
+          window.addEventListener('load', function () {
+              initApp()
+          });
+      </script>
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img src="images/logo.png" width="300" height="75" alt="">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li><a id="sign-in-status" class="nav-link"></a></li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">
+                        Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Products</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+                <li>
+                    <a id="btnSignOut" class="nav-link" onclick="SignOut();">Sign Out</a>
+                </li>
+            </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container text-center">
+      <h1 class="mt-5" style="color:#F4793E">YardiAI</h1>
+      <p></p>
+    </div>
+    <div class="container">
+        <p>Home Page</p>
+        <h3 id="sign-in-status"></h3>
+        <div id="sign-in"></div>
+        <div id="account-details"></div>
+    </div>
+    <!-- /.container -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/popper/popper.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+  </body>
+
+</html>
