@@ -26,7 +26,7 @@ p a:hover {
   transition: all .25s; }
 
 .btn {
-  background: #990033;
+  /*background: #990033;*/
   padding: 12px 30px;
   border-radius: 3px;
   margin-right: 10px;
@@ -35,22 +35,22 @@ p a:hover {
   display: inline-block;
   width: 130px; }
   .btn:hover {
-    background: #cc0044; }
+     /*background: #990033;*/ }
   .btn:active {
     top: 1px; }
   .btn:last-child {
     margin-right: 0; }
 
 ::-moz-selection {
-  background: #990033;
+  /*background: #990033;*/
   color: #fff; }
 
 ::selection {
-  background: #990033;
+   /*background: #990033;*/
   color: #fff; }
 
 ::-moz-selection {
-  background: #990033;
+   /*background: #990033;*/
   color: #fff; }
 
 @-webkit-keyframes bounce {
