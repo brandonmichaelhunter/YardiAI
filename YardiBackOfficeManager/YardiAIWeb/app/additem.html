@@ -7,6 +7,7 @@
     <meta name="author" content="">
     <title>YardAI - Create New Item</title>
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase-storage.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.js"></script>
     <script src="/js/FirebaseInit.js"></script>
@@ -92,7 +93,7 @@
             document.getElementById('lng').value = position.coords.longitude;
         }
         function SaveChanges() {
-            
+
 
             var imgFullURL = document.getElementById('photo').value;
             var file = document.getElementById('photo').files[0];
@@ -112,13 +113,17 @@
                 document.getElementById("lblPhotoTags").style.display = 'hidden'
                 //Save to storage second
                 var storageRef = firebase.storage().ref();
+                var dbRef = firebase.database().ref('YardTasks');
                 var metadata = {
                     'contentType': file.type,
                     customMetadata: {
                         'userid': document.getElementById("UserID").value
                     }
                 };
-            
+                var imageTags = ""
+                for (var a = 0; a <= tagCtrl.getTagValues().length - 1; a++) {
+                    imageTags += tagCtrl.getTagValues()[a] + ","
+                }
                 // Push to child path.
                 // [START oncomplete]
                 storageRef.child('images/' + file.name).put(file, metadata).then(function (snapshot) {
@@ -127,7 +132,7 @@
                     var url = snapshot.downloadURL;
                     fileUrl = url;
                     //Save to database first.
-                    var dbRef = firebase.database().ref('YardTasks');
+
                     var recRef = dbRef.push();
                     recRef.set({
                         Latitude: document.getElementById('lat').value,
@@ -137,7 +142,7 @@
                         UserID: document.getElementById("UserID").value,
                         ImageURL: fileUrl,
                         ImageName: file.name,
-                        Tags: tagCtrl.getTagValues(),
+                        Tags: imageTags,
                         ImageProcessed: 0
                     });
                     //redirect the user back to the home page.
@@ -154,10 +159,10 @@
             }
         }
         function handleFileSelect(evt) {
-            
+
             evt.stopPropagation();
             evt.preventDefault();
-            
+
             // [END oncomplete]
         }
         function Cancel() {
