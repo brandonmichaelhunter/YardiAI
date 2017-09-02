@@ -10,6 +10,7 @@
     <script src="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.js"></script>
     <script src="js/FirebaseInit.js"></script>
     <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="js/Utility.js"></script>
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
@@ -27,17 +28,21 @@
                     $("hndUserID").val(usr.uid);
                     // User is signed in.
                     var displayName = user.displayName;
-                    var email = user.email;
-                    var emailVerified = user.emailVerified;
-                    var photoURL = user.photoURL;
-                    var uid = user.uid;
-                    var phoneNumber = user.phoneNumber;
-                    var providerData = user.providerData;
 
+                    var UserAccount = {
+                        UserID: usr.uid,
+                        DisplayName: user.displayName,
+                        Email: user.email,
+                        PhotoURL: user.photoURL,
+                        PhoneNumber: user.phoneNumber,
+                        ProviderData: user.providerData,
+                        AccountCreatedDate: getFormattedDate()
+                    }
+                   
                     user.getToken().then(function (accessToken) {
-                        document.getElementById('sign-in-status').textContent = 'Welcome ' + user.displayName;
+                        document.getElementById('sign-in-status').textContent = 'Welcome ' + displayName;
                         btnSignOut = document.getElementById('btnSignOut');
-
+                        SaveUserAccount(UserAccount)
                         imgUserPhoto = document.getElementById('imgUserPhoto');
                         if (imgUserPhoto != null || imgUserPhoto != undefined) {
                             imgUserPhoto.alt = user.displayName;
@@ -109,6 +114,21 @@
         }
         function EditItem(RecordKey) {
             window.location.replace("app/edititem.html?ID="+RecordKey+"")
+        }
+        function SaveUserAccount(UserAccount)
+        {
+            //Check to see if the user acounts exists.
+            var tableRef = firebase.database().ref("Users");
+            tableRef.orderByChild("UserID").equalTo(UserAccount.UserID).once("value", function (snapshot) {
+                var userData = snapshot.val();
+                if (!userData) {
+                    /* Create the acount. */
+                    var recRef = tableRef.push();
+                    recRef.set(UserAccount);
+                }
+            });
+
+           
         }
         window.addEventListener('load', function () {
             initApp();
