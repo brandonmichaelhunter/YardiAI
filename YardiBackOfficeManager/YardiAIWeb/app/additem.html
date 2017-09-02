@@ -126,9 +126,11 @@
                 }
                 var index = imageTags.lastIndexOf(",");
                 imageTags = imageTags.substring(0, index) + imageTags.substring(index + 1);
+                document.getElementById("lblSavingStatus").innerText = "Uploading Photo";
                 // Push to child path.
                 // [START oncomplete]
                 storageRef.child('images/' + file.name).put(file, metadata).then(function (snapshot) {
+                    document.getElementById("lblSavingStatus").innerText = "Photo Upload. Saving form changes to database.";
                     //console.log('Uploaded', snapshot.totalBytes, 'bytes.');
                     //console.log(snapshot.metadata);
                     var url = snapshot.downloadURL;
@@ -145,8 +147,11 @@
                         ImageURL: fileUrl,
                         ImageName: file.name,
                         Tags: imageTags,
-                        ImageProcessed: 0
+                        ImageProcessed: 0,
+                        TaskComplete: 0,
+                        ImageClassified:''
                     });
+                    document.getElementById("lblSavingStatus").innerText = "Form chnages saved to database.";
                     //redirect the user back to the home page.
                     window.location.replace("/home.html")
                     // [START_EXCLUDE]
@@ -213,8 +218,8 @@
         <p></p>
     </div>
     <div class="container ">
-        <h3 class="text-center" style="color:#F4793E">Create New Entry</h3>
-        <p class="text-center">Provided below are steps on how to upload a new entry to the database.</p>
+        <h3 class="" style="color:#F4793E">Add a new task</h3>
+        <p >Provided below are steps on how to upload a new entry to the database.</p>
         
         <form class="text-capitalize">
             <div class="form-group">
@@ -244,6 +249,9 @@
                 <input type="hidden" id="lat" value="" />
                 <input type="hidden" id="lng" value="" />
                 <input type="hidden" id="UserID" value="" />
+            </div>
+            <div class="form-group">
+                <label id="lblSavingStatus" style="color:green;font-weight:bold"></label>
             </div>
             <button type="button" onclick="SaveChanges()" class="btn btn-success">Save</button>
             <button type="button" onclick="Cancel()" class="btn btn-danger">Cancel</button>

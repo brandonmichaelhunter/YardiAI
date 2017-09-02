@@ -78,7 +78,7 @@
 
                     var dataObj = childSnapshot.val();
                     var recID = childSnapshot.key;
-                    htmldata = "<tr><td ><a href='#' onclick=EditItem('" + recID + "');return false; class='btn btn-success' style='color:white'>Edit</a></td><td ><a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + recID + "','" + dataObj.ImageName + "');return false;>Delete</a></td><td ><img src='" + dataObj.ImageURL + "' class='img-responsive' width='200' height='150'  /></td><td >" + dataObj.Tags + "</td><td >" + dataObj.Latitude + "</td><td >" + dataObj.Longitude + "</td><td >" + dataObj.CreatedDate + "</td><td >" + dataObj.ModifiedDate + "</td></tr>";
+                    htmldata = "<tr><td ><a href='#' onclick=EditItem('" + recID + "');return false; class='btn btn-success' style='color:white'>Edit</a></td><td ><a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + recID + "','" + dataObj.ImageName + "');return false;>Delete</a></td><td ><img src='" + dataObj.ImageURL + "' class='img-responsive' width='175' height='150'  /></td><td >" + dataObj.Tags + "</td><td >" + dataObj.Latitude + "</td><td >" + dataObj.Longitude + "</td><td>"+dataObj.ImageClassified+"</td><td >" + dataObj.CreatedDate + "</td><td >" + dataObj.ModifiedDate + "</td></tr>";
                     $('table tbody').append(htmldata);
                 });
 
@@ -247,7 +247,7 @@ only screen and (max-width: 760px),
        
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-12">
-                <a href="app/additem.html">Add new task for YardiAI</a>
+                <a href="app/additem.html">Create a new task for YardiAI new task for YardiAI</a>
             </div>
         </div>
         <h3 id="sign-in-status"></h3>
@@ -268,6 +268,7 @@ only screen and (max-width: 760px),
                             <th class="text">Photo Tags</th>
                             <th class="numeric">Latitude</th>
                             <th class="numeric">Longitude</th>
+                            <th>Classified Image</th>
                             <th class="numeric">Created Date</th>
                             <th class="numeric">Modified Date</th>
 

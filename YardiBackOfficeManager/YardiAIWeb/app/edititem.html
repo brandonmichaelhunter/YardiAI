@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <title>YardAI - Create New Item</title>
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
-    
+
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase-storage.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.js"></script>
     <script src="/js/FirebaseInit.js"></script>
@@ -41,7 +41,7 @@
                     //var providerData = user.providerData;
                     var searchParams = new URLSearchParams(window.location.search);
                     GetItem(searchParams.get("ID"));
-                    
+
                     user.getToken().then(function (accessToken) {
                         document.getElementById('sign-in-status').textContent = 'Welcome ' + user.displayName;
                         btnSignOut = document.getElementById('btnSignOut');
@@ -51,7 +51,7 @@
                             imgUserPhoto.alt = user.displayName;
                             imgUserPhoto.src = user.photoURL;
                         }
-                        
+
                     });
                     return usr;
                 } else {
@@ -74,13 +74,19 @@
             var dbRef = firebase.database().ref("YardTasks");
             var dbRec = dbRef.child(RecordID);
             var obj = null
-            dbRec.once('value')
-  .then(function (dataSnapshot) {
-      // handle read data.
-      obj = dataSnapshot.val();
-      $("#imgPhoto").attr('src',obj.ImageURL)
-  });
-            
+            dbRec.once('value').then(function (dataSnapshot) {
+               // display data to screen.
+                obj = dataSnapshot.val();
+                $("#imgPhoto").attr('src', obj.ImageURL);
+                $("#hndImageName").val(obj.ImageName)
+                $("#hndUserID").val(obj.UserID);
+                $("#hndRecordID").val(RecordID);
+               var tagsList = obj.Tags.split(',');
+               for (var a = 0; a <= tagsList.length - 1; a++) {
+                   tagCtrl.add(tagsList[a]);
+               }
+            });
+
         }
         window.addEventListener('load', function () {
             initApp();
@@ -107,73 +113,101 @@
         }
         function SaveChanges() {
 
-
+            
             var imgFullURL = document.getElementById('photo').value;
             var file = document.getElementById('photo').files[0];
+            var UserID = document.getElementById("hndUserID").value
             var fileUrl = ''
             /* Validate form */
-            if (file == null || file == '') {
-                document.getElementById("lblErrorPhotoUpload").style.display = 'block'
-            }
-            else if(tagCtrl.getTagValues() == null || tagCtrl.getTagValues() == '')
-            {
+             if (tagCtrl.getTagValues() == null || tagCtrl.getTagValues() == '') {
                 document.getElementById("lblPhotoTags").style.display = 'block'
             }
             else
             {
                 //Hide the error lables
-                document.getElementById("lblErrorPhotoUpload").style.display = 'hidden'
-                document.getElementById("lblPhotoTags").style.display = 'hidden'
-                //Save to storage second
-                var storageRef = firebase.storage().ref();
-                var dbRef = firebase.database().ref('YardTasks');
-                var metadata = {
-                    'contentType': file.type,
-                    customMetadata: {
-                        'userid': document.getElementById("UserID").value
-                    }
-                };
-                var imageTags = ""
-                for (var a = 0; a <= tagCtrl.getTagValues().length - 1; a++) {
-                    if (a == tagCtrl.getTagValues().length - 1) {
-                        imageTags += tagCtrl.getTagValues()[a]
-                    }
-                    else {
+                document.getElementById("lblErrorPhotoUpload").style.display = 'hidden';
+                document.getElementById("lblPhotoTags").style.display = 'hidden';
+                if (file != null || file == '') {
+                    /* Delete the old image from Firebase storage */ 
+                    var storageRef = firebase.storage().ref();
+                    var oldPhotoFileName = $("#hndImageName").val();
+                    document.getElementById("lblSavingStatus").innerText = "Deleting old photo";
+                    storageRef.child('images/' + oldPhotoFileName).delete().then(function () {
+                        document.getElementById("lblSavingStatus").innerText = "Old photo has been deleted. Adding new photo.";
+                        console.log("File has been deleted.")
+                    }).catch(function (error) {
+                        console.log("We got an error")
+                    });
+                    /* Add the new image to Firebase storage. */
+                    
+                    var metadata = { 'contentType': file.type, customMetadata: { 'userid': UserID } };
+                    storageRef.child('images/' + file.name).put(file, metadata).then(function (snapshot) {
+                        document.getElementById("lblSavingStatus").innerText = "New photo added. Saving form changes to database.";
+                        console.log('Uploaded', snapshot.totalBytes, 'bytes.');
+                        console.log(snapshot.metadata);
+   
+                        fileUrl = snapshot.downloadURL;
+                        /* Update database record */
+                        var dbRef = firebase.database().ref('YardTasks');
+
+                        var imageTags = ""
+                        for (var a = 0; a <= tagCtrl.getTagValues().length - 1; a++) {
+                            imageTags += tagCtrl.getTagValues()[a] + ","
+                        }
+                        var index = imageTags.lastIndexOf(",");
+                        imageTags = imageTags.substring(0, index) + imageTags.substring(index + 1);
+
+                        var RecordID = document.getElementById("hndRecordID").value;
+                        var recRef = dbRef.child(RecordID);
+                        recRef.update({
+                            Latitude: document.getElementById('lat').value,
+                            Longitude: document.getElementById('lng').value,
+                            ModifiedDate: getFormattedDate(),
+                            UserID: UserID,
+                            ImageURL: fileUrl,
+                            ImageName: file.name,
+                            Tags: imageTags,
+                            ImageProcessed: 0
+                        })
+                        document.getElementById("lblSavingStatus").innerText = "Form changes saved to database.";
+                        //redirect the user back to the home page.
+                        window.location.replace("/home.html")
+                        // [START_EXCLUDE]
+                        //document.getElementById('linkbox').innerHTML = '<a href="' + url + '">Click For File</a>';
+                        // [END_EXCLUDE]
+                    }).catch(function (error) {
+                        // [START onfailure]
+                        console.error('Upload failed:', error);
+                        // [END onfailure]
+                    });
+
+                }
+                else {
+                    var dbRef = firebase.database().ref('YardTasks');
+
+                    var imageTags = ""
+                    for (var a = 0; a <= tagCtrl.getTagValues().length - 1; a++) {
                         imageTags += tagCtrl.getTagValues()[a] + ","
                     }
-                    
-                }
-                // Push to child path.
-                // [START oncomplete]
-                storageRef.child('images/' + file.name).put(file, metadata).then(function (snapshot) {
-                    //console.log('Uploaded', snapshot.totalBytes, 'bytes.');
-                    //console.log(snapshot.metadata);
-                    var url = snapshot.downloadURL;
-                    fileUrl = url;
-                    //Save to database first.
+                    var index = imageTags.lastIndexOf(",");
+                    imageTags = imageTags.substring(0, index) + imageTags.substring(index + 1);
 
-                    var recRef = dbRef.push();
-                    recRef.set({
+                    var RecordID = document.getElementById("hndRecordID").value;
+                    var recRef = dbRef.child(RecordID);
+                    recRef.update({
                         Latitude: document.getElementById('lat').value,
                         Longitude: document.getElementById('lng').value,
-                        CreatedDate: getFormattedDate(),
                         ModifiedDate: getFormattedDate(),
-                        UserID: document.getElementById("UserID").value,
-                        ImageURL: fileUrl,
-                        ImageName: file.name,
+                        UserID: UserID,
                         Tags: imageTags,
                         ImageProcessed: 0
-                    });
+                    })
+
                     //redirect the user back to the home page.
                     window.location.replace("/home.html")
-                    // [START_EXCLUDE]
-                    //document.getElementById('linkbox').innerHTML = '<a href="' + url + '">Click For File</a>';
-                    // [END_EXCLUDE]
-                }).catch(function (error) {
-                    // [START onfailure]
-                    console.error('Upload failed:', error);
-                    // [END onfailure]
-                });
+                }
+                
+ 
 
             }
         }
@@ -190,6 +224,12 @@
     </script>
 </head>
 <body>
+    <input type="hidden" id="hndImageName" value="" />
+    <input type="hidden" id="hndUserID" value="" />
+    <input type="hidden" id="hndRecordID" value="" />
+    <input type="hidden" id="lat" value="" />
+    <input type="hidden" id="lng" value="" />
+    <input type="hidden" id="UserID" value="" />
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
@@ -232,16 +272,16 @@
     <div class="container ">
         <h3 class="text-center" style="color:#F4793E">Edit Entry</h3>
         <p class="text-center">Provided below are steps on how to upload a new entry to the database.</p>
-        
+
         <form class="text-capitalize">
             <div class="form-group">
-             <span>1. Upload a new photo</span><br/>
+                <span>1. Upload a new photo</span><br />
                 <span>2. Select a tag for your uploaded photo</span><br />
                 <span>3. Save your changes</span><br />
 
             </div>
             <div class="form-group">
-                <label for="">Existing Photo</label> <br/>
+                <label for="">Existing Photo</label> <br />
                 <img id="imgPhoto" class='img-responsive' src="" />
             </div>
             <div class="form-group">
@@ -259,12 +299,13 @@
                         </li>
                     </ul>
                     <div class="taggle_sizer" style="font-size: 16px;"></div>
-                    
+
                 </div>
                 <label id="lblPhotoTags" class="text-danger" style="display:none">Please select a tag</label>
-                <input type="hidden" id="lat" value="" />
-                <input type="hidden" id="lng" value="" />
-                <input type="hidden" id="UserID" value="" />
+                
+            </div>
+            <div class="form-group">
+                <label id="lblSavingStatus" style="color:green;font-weight:bold"></label>
             </div>
             <button type="button" onclick="SaveChanges()" class="btn btn-success">Save</button>
             <button type="button" onclick="Cancel()" class="btn btn-danger">Cancel</button>
