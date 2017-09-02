@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>YardAI - Your best friend while doing yard work</title>
+    <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.js"></script>
+    <script src="js/FirebaseInit.js"></script>
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="js/Utility.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="css/logo-nav.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.css" />
+    <script type="text/javascript">
+        initApp = function () {
+
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) {
+
+                    usr = user;
+                    console.log("User is: " + usr.uid)
+                    $("hndUserID").val(usr.uid);
+                    // User is signed in.
+                    var displayName = user.displayName;
+
+                    
+                    var tableRef = firebase.database().ref("Users");
+                    //var refRef = tableRef.child('UserID');
+                    //var ref = refRef.child(user.uid);
+                    //var ref1 = ref.child("AccountCreatedDate")
+                    tableRef.orderByChild("/UserID/").equalTo(user.uid).once("value").then(function (snapshot) {
+                        var userData = snapshot.val();
+                        //document.getElementById("lblAccountCreatedDate").innerHTML = userData.AccountCreatedDate;
+                    })
+                    //var usersRef = firebase.database().ref('users');
+                    //var adaRef = usersRef.child('ada');
+                    //var adaFirstNameRef = adaRef.child('name/first');
+                    //var path = adaFirstNameRef.toString();
+                    //, function (snapshot) {
+                    //    var userData = snapshot.val();
+                    //    if (userData) {
+                    //        document.getElementById("lblAccountCreatedDate").innerHTML = userData.AccountCreatedDate;
+                    //    }
+                    //});
+                    //var userId = firebase.auth().currentUser.uid;
+                    //return firebase.database().ref('/users/' + userId).once('value').then(function (snapshot) {
+                    //    var username = (snapshot.val() && snapshot.val().username) || 'Anonymous';
+                    //    // ...
+                    //});
+                    user.getToken().then(function (accessToken) {
+                        document.getElementById('sign-in-status').textContent = 'Welcome ' + displayName;
+                        document.getElementById('h1DisplayName').innerHTML = displayName;
+                        document.getElementById('DisplayName').value = displayName;
+                        document.getElementById('phone').value = user.phoneNumber;
+                        btnSignOut = document.getElementById('btnSignOut');
+                        document.getElementById('email').innerHTML = user.email;
+                        imgUserPhoto = document.getElementById('imgProfilePhoto');
+                        if (user.photoURL != null || user.photoURL != undefined) {
+                            imgUserPhoto.alt = user.displayName;
+                            imgUserPhoto.src = user.photoURL;
+                        }
+
+                    });
+                    
+                   
+                    
+                    return usr;
+                } else {
+
+                    // User is signed out.
+                    window.location.href = "index.html";
+                    btnSignOut.style.display = 'none';
+                    //document.getElementById('sign-in-status').textContent = 'Signed out';
+                    //document.getElementById('sign-in').textContent = 'Sign in';
+                    //document.getElementById('account-details').textContent = 'null';
+                }
+            }, function (error) {
+                console.log(error);
+            });
+        };
+        
+        function SignOut() {
+            firebase.auth().signOut();
+        }
+        
+        
+        
+        window.addEventListener('load', function () {
+            initApp();
+            //var userId = firebase.auth().currentUser.uid;
+
+            //return firebase.database().ref('/YardTasks/' + userId).once('value').then(function (snapshot) {
+            //    var username = (snapshot.val() && snapshot.val().username) || 'Anonymous';
+            //    // ...
+            //});
+        });
+    </script>
+    <style type="text/css">
+                
+
+              body{margin-top:20px;}    
+    </style>
+</head>
+<body>
+    <input type="hidden" id="hndUserID" value="" />
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="images/logo.png" width="300" height="75" alt="">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li><a id="sign-in-status" href="account.html" class="nav-link"></a><span class="sr-only">(current)</span></li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="home.html">
+                            Home
+                            
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link href="#">Contact</a>
+                    </li>
+                    <li>
+                        <a id="btnSignOut" class="nav-link" onclick="SignOut();">Sign Out</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page Content -->
+    <div class="container">
+        <h1 class="mt-5" style="color:#F4793E">Account Info</h1>
+        <p></p>
+    </div>
+    <div class="container">
+       
+       
+        <h3 id="sign-in-status"></h3>
+        <div id="sign-in"></div>
+        <div id="account-details"></div>
+
+    </div>
+    <div class="container">
+        <div class="row">
+            <div>
+                <div class="container bootstrap snippet">
+                    <div class="row">
+                        <div class="col-sm-10"><h1 id="h1DisplayName">User name</h1></div>
+                        <div class="col-sm-2"><a href="/users" class="pull-right"><img title="profile image" id="imgProfilePhoto" width="150" height="150" class="img-circle img-responsive" src="http://www.gravatar.com/avatar/28fd20ccec6865e2d5f0e1f4446eb7bf?s=100"></a></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-10">
+                            
+                        </div>
+                        <div class="col-sm-2"></div>
+                    </div><hr />
+                    <div class="row">
+                        
+                            
+                        <div class="col-sm-12">
+
+                            
+                                
+                                <div class="tab-pane" id="settings">
+
+
+                                    <hr>
+                                    <form class="form" action="##" method="post" id="registrationForm">
+                                        <div class="form-group">
+
+                                            <div class="col-xs-6">
+                                                <label for="DisplayName"><h4>Display name</h4></label>
+                                                <input type="text" class="form-control" name="DisplayName" id="DisplayName" placeholder="DisplayName" title="enter your DisplayName if any.">
+                                            </div>
+                                        </div>
+                                       
+
+                                        <div class="form-group">
+
+                                            <div class="col-xs-6">
+                                                <label for="phone"><h4>Phone</h4></label>
+                                                <input type="text" class="form-control" name="phone" id="phone" placeholder="enter phone" title="enter your phone number if any.">
+                                            </div>
+                                        </div>
+
+                                        
+                                        <div class="form-group">
+
+                                            <div class="col-xs-6">
+                                                <label for="email"><h4>Email</h4></label>
+                                                <input type="email" class="form-control" name="email" id="email" placeholder="you@email.com" title="enter your email.">
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                        <div class="form-group">
+
+                                            <div class="col-xs-6">
+                                                <label for="password2"><h4>Verify</h4></label>
+                                                <input type="password" class="form-control" name="password2" id="password2" placeholder="password2" title="enter your password2.">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-xs-12">
+                                                <br>
+                                                <button class="btn btn-lg btn-success" type="submit"><i class="glyphicon glyphicon-ok-sign"></i> Save</button>
+                                                <button class="btn btn-lg" type="reset"><i class="glyphicon glyphicon-repeat"></i> Reset</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>--><!--/tab-pane-->
+                        </div>
+                    </div>
+                </div>
+                <!-- /.container -->
+                <!-- Bootstrap core JavaScript -->
+
+                <script src="vendor/popper/popper.min.js"></script>
+                <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+</body>
+</html>
