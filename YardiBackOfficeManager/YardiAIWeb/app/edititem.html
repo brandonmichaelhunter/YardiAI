@@ -33,13 +33,15 @@
                     console.log("User is: " + usr.uid)
                     // User is signed in.
                     var displayName = user.displayName;
-                    var email = user.email;
-                    var emailVerified = user.emailVerified;
-                    var photoURL = user.photoURL;
-                    var uid = user.uid;
-                    var phoneNumber = user.phoneNumber;
-                    var providerData = user.providerData;
-
+                    //var email = user.email;
+                    //var emailVerified = user.emailVerified;
+                    //var photoURL = user.photoURL;
+                    //var uid = user.uid;
+                    //var phoneNumber = user.phoneNumber;
+                    //var providerData = user.providerData;
+                    var searchParams = new URLSearchParams(window.location.search);
+                    GetItem(searchParams.get("ID"));
+                    
                     user.getToken().then(function (accessToken) {
                         document.getElementById('sign-in-status').textContent = 'Welcome ' + user.displayName;
                         btnSignOut = document.getElementById('btnSignOut');
@@ -49,7 +51,7 @@
                             imgUserPhoto.alt = user.displayName;
                             imgUserPhoto.src = user.photoURL;
                         }
-
+                        
                     });
                     return usr;
                 } else {
@@ -68,7 +70,18 @@
         function SignOut() {
             firebase.auth().signOut();
         }
-
+        function GetItem(RecordID) {
+            var dbRef = firebase.database().ref("YardTasks");
+            var dbRec = dbRef.child(RecordID);
+            var obj = null
+            dbRec.once('value')
+  .then(function (dataSnapshot) {
+      // handle read data.
+      obj = dataSnapshot.val();
+      $("#imgPhoto").attr('src',obj.ImageURL)
+  });
+            
+        }
         window.addEventListener('load', function () {
             initApp();
             tagCtrl = new Taggle('PhotoTag', {
@@ -122,10 +135,14 @@
                 };
                 var imageTags = ""
                 for (var a = 0; a <= tagCtrl.getTagValues().length - 1; a++) {
-                    imageTags += tagCtrl.getTagValues()[a] + ","
+                    if (a == tagCtrl.getTagValues().length - 1) {
+                        imageTags += tagCtrl.getTagValues()[a]
+                    }
+                    else {
+                        imageTags += tagCtrl.getTagValues()[a] + ","
+                    }
+                    
                 }
-                var index = imageTags.lastIndexOf(",");
-                imageTags = imageTags.substring(0, index) + imageTags.substring(index + 1);
                 // Push to child path.
                 // [START oncomplete]
                 storageRef.child('images/' + file.name).put(file, metadata).then(function (snapshot) {
@@ -213,7 +230,7 @@
         <p></p>
     </div>
     <div class="container ">
-        <h3 class="text-center" style="color:#F4793E">Create New Entry</h3>
+        <h3 class="text-center" style="color:#F4793E">Edit Entry</h3>
         <p class="text-center">Provided below are steps on how to upload a new entry to the database.</p>
         
         <form class="text-capitalize">
@@ -222,6 +239,10 @@
                 <span>2. Select a tag for your uploaded photo</span><br />
                 <span>3. Save your changes</span><br />
 
+            </div>
+            <div class="form-group">
+                <label for="">Existing Photo</label> <br/>
+                <img id="imgPhoto" class='img-responsive' src="" />
             </div>
             <div class="form-group">
                 <label for="photo">upload photo<span class="text-danger">*</span></label>

@@ -24,6 +24,7 @@
 
                     usr = user;
                     console.log("User is: " + usr.uid)
+                    $("hndUserID").val(usr.uid);
                     // User is signed in.
                     var displayName = user.displayName;
                     var email = user.email;
@@ -44,25 +45,10 @@
                         }
 
                     });
-                    var htmldata = null;
-
-                    var tblRef = document.getElementById('tbDataTable').getElementsByTagName('tbody')[0];
-                    var newRow = null;
-                    var newCell = null;
-                    var newEle = null
-                    var ref = firebase.database().ref("YardTasks");
-                    ref.orderByChild("UserID").equalTo(usr.uid).once("value", function (snapshot) {
-                        /* Add the column names.*/
-                        snapshot.forEach(function (childSnapshot) {
-                            
-                            var dataObj = childSnapshot.val();
-                            var recID = childSnapshot.key;
-                            htmldata = "<tr><td><a href='#' class='btn btn-success' style='color:white'>Edit</a></td><td><a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + recID + "','" + dataObj.ImageName+ "');return false;>Delete</a></td><td><img src='" + dataObj.ImageURL + "' width='200' height='100' /></td><td>" + dataObj.Tags + "</td><td>" + dataObj.Latitude + "</td><td>" + dataObj.Longitude + "</td><td>" + dataObj.CreatedDate + "</td><td>" + dataObj.ModifiedDate + "</td></tr>";
-                            $('table tbody').append(htmldata);
-                        });
-                        
-                        
-                    });
+                    
+                    
+                    LoadGrid(usr.uid)
+                    
                     return usr;
                 } else {
 
@@ -77,13 +63,34 @@
                 console.log(error);
             });
         };
+        function LoadGrid(UserID) {
+            
+            var htmldata = null;
+            var tblRef = document.getElementById('tbDataTable').getElementsByTagName('tbody')[0];
+            tblRef.innerHTML = ''
+            var newRow = null;
+            var newCell = null;
+            var newEle = null
+            var ref = firebase.database().ref("YardTasks");
+            ref.orderByChild("UserID").equalTo(usr.uid).once("value", function (snapshot) {
+                /* Add the column names.*/
+                snapshot.forEach(function (childSnapshot) {
+
+                    var dataObj = childSnapshot.val();
+                    var recID = childSnapshot.key;
+                    htmldata = "<tr><td ><a href='#' onclick=EditItem('" + recID + "');return false; class='btn btn-success' style='color:white'>Edit</a></td><td ><a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + recID + "','" + dataObj.ImageName + "');return false;>Delete</a></td><td ><img src='" + dataObj.ImageURL + "' class='img-responsive' width='200' height='150'  /></td><td >" + dataObj.Tags + "</td><td >" + dataObj.Latitude + "</td><td >" + dataObj.Longitude + "</td><td >" + dataObj.CreatedDate + "</td><td >" + dataObj.ModifiedDate + "</td></tr>";
+                    $('table tbody').append(htmldata);
+                });
+
+
+            });
+        }
         function SignOut() {
             firebase.auth().signOut();
         }
-        function DeleteItem(RecordKey, ImageName){
+        function DeleteItem(RecordKey, ImageName) {
             var YesNo = confirm("Are you sure you want to delete this record?");
-            if (YesNo)
-            {
+            if (YesNo) {
                 var dbRef = firebase.database().ref("YardTasks");
                 dbRef.child(RecordKey).remove();
                 var storageRef = firebase.storage().ref();
@@ -91,14 +98,17 @@
                 var imageRef = storageRef.child(refLoc);
                 imageRef.delete().then(function () {
                     console.log("File has been deleted")
+                    LoadGrid($("hndUserID").val());
                 }).catch(function (error) {
                     alert("We have an error")
                 });
             }
-            else
-            {
+            else {
                 alert("Easy there young philly")
             }
+        }
+        function EditItem(RecordKey) {
+            window.location.replace("app/edititem.html?ID="+RecordKey+"")
         }
         window.addEventListener('load', function () {
             initApp();
@@ -111,62 +121,89 @@
         });
     </script>
     <style type="text/css">
-        @media only screen and (max-width: 800px) {
+                
 
-            /* Force table to not be like tables anymore */
-            #no-more-tables table,
-            #no-more-tables thead,
-            #no-more-tables tbody,
-            #no-more-tables th,
-            #no-more-tables td,
-            #no-more-tables tr {
-                display: block;
-            }
-
-                /* Hide table headers (but not display: none;, for accessibility) */
-                #no-more-tables thead tr {
-                    position: absolute;
-                    top: -9999px;
-                    left: -9999px;
+                /*
+        Generic Styling, for Desktops/Laptops
+        */
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                /* Zebra striping */
+                tr:nth-of-type(odd) {
+                    background: #eee;
                 }
 
-            #no-more-tables tr {
-                border: 1px solid #ccc;
-            }
-
-            #no-more-tables td {
-                /* Behave  like a "row" */
-                border: none;
-                border-bottom: 1px solid #eee;
-                position: relative;
-                padding-left: 50%;
-                white-space: normal;
-                text-align: left;
-            }
-
-                #no-more-tables td:before {
-                    /* Now like a table header */
-                    position: absolute;
-                    /* Top/left values mimic padding */
-                    top: 6px;
-                    left: 6px;
-                    width: 45%;
-                    padding-right: 10px;
-                    white-space: nowrap;
-                    text-align: left;
+                th {
+                    background: #333;
+                    color: white;
                     font-weight: bold;
                 }
 
-                /*
-        Label the data
-        */
-                #no-more-tables td:before {
-                    content: attr(data-title);
+                td, th {
+                    padding: 6px;
+                    border: 1px solid #ccc;
+                    text-align: left;
                 }
-        }
+                /* 
+Max width before this PARTICULAR table gets nasty
+This query will take effect for any screen smaller than 760px
+and also iPads specifically.
+*/
+@media 
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+
+	/* Force table to not be like tables anymore */
+	table, thead, tbody, th, td, tr { 
+		display: block; 
+	}
+	
+	/* Hide table headers (but not display: none;, for accessibility) */
+	thead tr { 
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+	
+	tr { border: 1px solid #ccc; }
+	
+	td { 
+		/* Behave  like a "row" */
+		border: none;
+		border-bottom: 1px solid #eee; 
+		position: relative;
+		padding-left: 50%; 
+	}
+	
+	td:before { 
+		/* Now like a table header */
+		position: absolute;
+		/* Top/left values mimic padding */
+		top: 6px;
+		left: 6px;
+		width: 45%; 
+		padding-right: 10px; 
+		white-space: nowrap;
+	}
+	
+	/*
+	Label the data*/
+	
+	td:nth-of-type(1):before { content: "Edit"; }
+	td:nth-of-type(2):before { content: "Delete"; }
+	td:nth-of-type(3):before { content: "Photo Entry"; }
+	td:nth-of-type(4):before { content: "Photo Tags"; }
+	td:nth-of-type(5):before { content: "Latitude"; }
+	td:nth-of-type(6):before { content: "Longitude"; }
+	td:nth-of-type(7):before { content: "Created Date"; }
+	td:nth-of-type(8):before { content: "Modified Date"; }
+}
     </style>
 </head>
 <body>
+    <input type="hidden" id="hndUserID" value="" />
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
@@ -192,10 +229,10 @@
                         <a class="nav-link" href="#">Products</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link  href="#">Contact</a>
+                        <a class="nav-link href="#">Contact</a>
                     </li>
                     <li>
-                        <a id="btnSignOut"  class="nav-link" onclick="SignOut();">Sign Out</a>
+                        <a id="btnSignOut" class="nav-link" onclick="SignOut();">Sign Out</a>
                     </li>
                 </ul>
             </div>
@@ -207,33 +244,38 @@
         <p></p>
     </div>
     <div class="container">
-        <p>Home Page</p>
+       
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-12">
-                <a href="app/additem.html">Add New Entry</a>
+                <a href="app/additem.html">Add new task for YardiAI</a>
             </div>
         </div>
         <h3 id="sign-in-status"></h3>
         <div id="sign-in"></div>
         <div id="account-details"></div>
-        <div id="no-more-tables ">
-            <table id="tbDataTable" class="col-md-12 table-bordered table-striped table-condensed cf">
-                <thead class="cf">
-                    <tr>
-                        <!--<th>Record ID</th>-->
-                        <th class="numeric">Edit</th>
-                        <th class="numeric">Delete</th>
-                        <th>Photo Entry</th>
-                        <th class="text">Photo Tags</th>
-                        <th class="numeric">Latitude</th>
-                        <th class="numeric">Longtitude</th>
-                        <th class="numeric">Created Date</th>
-                        <th class="numeric">Modified Date</th>
-                        
-                    </tr>
-                </thead>
-                <tbody id="tbDataRow"></tbody>
-            </table>
+
+    </div>
+    <div class="container">
+        <div class="row">
+            <div >
+                <table id="tbDataTable">
+                    <thead class="cf">
+                        <tr>
+                            <!--<th>Record ID</th>-->
+                            <th class="numeric">Edit</th>
+                            <th class="numeric">Delete</th>
+                            <th>Photo Entry</th>
+                            <th class="text">Photo Tags</th>
+                            <th class="numeric">Latitude</th>
+                            <th class="numeric">Longitude</th>
+                            <th class="numeric">Created Date</th>
+                            <th class="numeric">Modified Date</th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="tbDataRow"></tbody>
+                </table>
+            </div>
         </div>
     </div>
     <!-- /.container -->
