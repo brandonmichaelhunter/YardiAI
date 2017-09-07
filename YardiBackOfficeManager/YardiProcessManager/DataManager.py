@@ -1,7 +1,8 @@
 #
 # DataManager is a class that will provide clients with methods to connect to any data source.
 #TODO:
-# Add a timer to run every 3 seconds to call Firebase for new entries. Maybe use the stream object. See documentation
+
+
 # Use the IsConnected method to determine if we're still connected to the internet.If we're not,then write the record key and image name to text file. Once we're back online, then process the data
 # within the text file first and then process new items from Firebase.
 # Add error handling
@@ -9,6 +10,7 @@
 import urllib3
 import socket
 import pyrebase
+import time
 from datetime import datetime
 class DataManager(object):
 
@@ -113,10 +115,16 @@ class DataManager(object):
         return "95% this is an image"
     def CallerGetRecentUnprocessTasks(self):
         #Need to add a timer that will call this every 3 seconds
-        queueTasks = self.GetRecentPosts()
-        for k,v in queueTasks.items():
-            self.ProccessQueueTask(k,v)
-
+        #
+        while True:
+            queueTasks = self.GetRecentPosts()
+            for k,v in queueTasks.items():
+                print("Processing image {}".format(v))
+                self.ProccessQueueTask(k,v)
+                print("Image {} has been processed.".format(v))
+            print("Sleeping")
+            time.sleep(3)
+            print("Im awake")
         
 
 
