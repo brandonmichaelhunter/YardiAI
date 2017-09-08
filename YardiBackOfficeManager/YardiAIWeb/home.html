@@ -52,8 +52,23 @@
                     });
                     
                     
-                    LoadGrid(usr.uid)
-                    
+                    //LoadGrid(usr.uid)
+                    var ref = firebase.database().ref("YardTasks").orderByChild("UserID").equalTo(usr.uid);
+                    //// When a new record task is created, update the tasks table on the screen.
+                    ref.on("child_added", function (snapshot, prevChildKey) {
+                        var newPost = snapshot.val();
+                        LoadGrid(newPost.UserID);
+                    });
+                    //// When an existing task is changed, update the tasks table on the screen.
+                    ref.on("child_changed", function (snapshot) {
+                        var changedPost = snapshot.val();
+                        LoadGrid(changedPost.UserID);
+                    });
+                    //// When an existing task has been deleted, update the tasks table on the screen.
+                    ref.on("child_removed", function (snapshot) {
+                        var deletedPost = snapshot.val();
+                        LoadGrid(deletedPost.UserID);
+                    });
                     return usr;
                 } else {
 
@@ -67,6 +82,7 @@
             }, function (error) {
                 console.log(error);
             });
+            
         };
         function LoadGrid(UserID) {
             
@@ -77,7 +93,8 @@
             var newCell = null;
             var newEle = null
             var ref = firebase.database().ref("YardTasks");
-            ref.orderByChild("UserID").equalTo(usr.uid).once("value", function (snapshot) {
+            console.log("User ID: "+UserID)
+            ref.orderByChild("UserID").equalTo(UserID).once("value", function (snapshot) {
                 /* Add the column names.*/
                 snapshot.forEach(function (childSnapshot) {
 
