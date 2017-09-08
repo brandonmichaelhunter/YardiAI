@@ -111,6 +111,11 @@ class DataManager(object):
         # return results back to consumer.
         return saveResults
 
+    def CacheWriteTasks(self,RecordKey, ImageName):
+        new_path = 'CachedTasks.txt'
+        log = open(new_path,'a')
+        log.write("{} - {}\n".format(RecordKey,ImageName))
+
     def IdentifyImage(self):
         return "95% this is an image"
     def CallerGetRecentUnprocessTasks(self):
@@ -119,6 +124,7 @@ class DataManager(object):
         while True:
             queueTasks = self.GetRecentPosts()
             for k,v in queueTasks.items():
+                self.CacheWriteTasks(k,v);
                 print("Processing image {}".format(v))
                 self.ProccessQueueTask(k,v)
                 print("Image {} has been processed.".format(v))
