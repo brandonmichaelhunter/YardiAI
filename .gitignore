@@ -1,6 +1,7 @@
 *.json
 /YardiBackOfficeManager/YardiAIWeb/prod/*
 /YardiBackOfficeManager/YardiAIWeb/functions/*
+/YardiBackOfficeManager/YardiAIWeb/vendor/*
 .firebaserc
 *.config
 *.log
