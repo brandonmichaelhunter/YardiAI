@@ -17,7 +17,18 @@
     <link href="css/logo-nav.css" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.2.1/firebaseui.css" />
+    <!-- FooTable resources -->
+ 
+    <!-- FooTable resources -->
     <script type="text/javascript">
+        var yardTasks = [];
+        var htmldata = null;
+        Storage.prototype.setObj = function (key, obj) {
+            return this.setItem(key, JSON.stringify(obj))
+        }
+        Storage.prototype.getObj = function (key) {
+            return JSON.parse(this.getItem(key))
+        }
         initApp = function () {
 
             firebase.auth().onAuthStateChanged(function (user) {
@@ -28,7 +39,7 @@
                     $("hndUserID").val(usr.uid);
                     // User is signed in.
                     var displayName = user.displayName;
-
+                    var userID = user.uid;
                     var UserAccount = {
                         UserID: usr.uid,
                         DisplayName: user.displayName,
@@ -38,7 +49,7 @@
                         ProviderData: user.providerData,
                         AccountCreatedDate: getFormattedDate()
                     }
-                   
+
                     user.getToken().then(function (accessToken) {
                         document.getElementById('sign-in-status').textContent = 'Welcome ' + displayName;
                         btnSignOut = document.getElementById('btnSignOut');
@@ -48,26 +59,63 @@
                             imgUserPhoto.alt = user.displayName;
                             imgUserPhoto.src = user.photoURL;
                         }
-
+                        /* Load the tasks after we get our user token from firebase. */
+                        //RetrieveUsersYardTasksFromFirebase(userID)
                     });
-                    
-                    
-                    //LoadGrid(usr.uid)
+                    InitCache();
+
+
                     var ref = firebase.database().ref("YardTasks").orderByChild("UserID").equalTo(usr.uid);
                     //// When a new record task is created, update the tasks table on the screen.
-                    ref.on("child_added", function (snapshot, prevChildKey) {
-                        var newPost = snapshot.val();
-                        LoadGrid(newPost.UserID);
+                    ref.on("child_added", function (NewYardTask, prevChildKey) {
+                        /* Create object.*/
+                        newYardTask = {
+                            RecordID: NewYardTask.key,
+                            ImageName: NewYardTask.val().ImageName,
+                            ImageURL: NewYardTask.val().ImageURL,
+                            Latitude: NewYardTask.val().Latitude,
+                            Longitude: NewYardTask.val().Longitude,
+                            ImageClassified: NewYardTask.val().ImageClassified,
+                            CreatedDate: NewYardTask.val().CreatedDate,
+                            ModifiedDate: NewYardTask.val().ModifiedDate,
+                            Tags: NewYardTask.val().Tags
+                        };
+                        /* Update screen. */
+                        UpdateGrid(newYardTask, "ADD");
                     });
                     //// When an existing task is changed, update the tasks table on the screen.
                     ref.on("child_changed", function (snapshot) {
-                        var changedPost = snapshot.val();
-                        LoadGrid(changedPost.UserID);
+                        var updateYardTask = snapshot.val();
+                        /* Create object.*/
+                        var editYardTask = {
+                            RecordID: snapshot.key,
+                            ImageName: updateYardTask.ImageName,
+                            ImageURL: updateYardTask.ImageURL,
+                            Latitude: updateYardTask.Latitude,
+                            Longitude: updateYardTask.Longitude,
+                            ImageClassified: updateYardTask.ImageClassified,
+                            CreatedDate: updateYardTask.CreatedDate,
+                            ModifiedDate: updateYardTask.ModifiedDate,
+                            Tags: updateYardTask.Tags
+                        };
+                        UpdateGrid(editYardTask, "EDIT");
                     });
                     //// When an existing task has been deleted, update the tasks table on the screen.
                     ref.on("child_removed", function (snapshot) {
-                        var deletedPost = snapshot.val();
-                        LoadGrid(deletedPost.UserID);
+                        var removedYardTask = snapshot.val();
+                        var deleteYardTask = {
+                            RecordID: snapshot.key,
+                            ImageName: removedYardTask.ImageName,
+                            ImageURL: removedYardTask.ImageURL,
+                            Latitude: removedYardTask.Latitude,
+                            Longitude: removedYardTask.Longitude,
+                            ImageClassified: removedYardTask.ImageClassified,
+                            CreatedDate: removedYardTask.CreatedDate,
+                            ModifiedDate: removedYardTask.ModifiedDate,
+                            Tags: removedYardTask.Tags
+                        };
+                        UpdateGrid(deleteYardTask, "DELETE");
+
                     });
                     return usr;
                 } else {
@@ -82,10 +130,189 @@
             }, function (error) {
                 console.log(error);
             });
-            
+
         };
-        function LoadGrid(UserID) {
+        //function SaveCacheUsersYardTasks(YardTasks) {
+        //    /* Save the YardTasks locally */
+        //    document.getElementById("hndYardTasks").value = YardTasks;
+        //}
+        //function GetCachedUsersYardTasks() {
+        //    return document.getElementById("hndYardTasks").value;
+        //}
+        function InitCache() {
+            if (typeof (Storage) !== "undefined") {
+                var list = [];
+                localStorage.setObj("YardTasks", new Array());
+            }
+        }
+        function GetCachedYardTasks() {
+            //check to see if sessionStorage exists.
+            if (typeof (Storage) !== "undefined") {
+                if (typeof (localStorage.getObj("YardTasks")) == "undefined" || localStorage.getObj("YardTasks") == "") {
+                    var list = [];
+                    return localStorage.setObj("YardTasks", new Array());
+                }
+                else {
+                    return localStorage.getObj("YardTasks");
+                }
+
+            }
+            else {
+                console.error("Your browser does not support web storage....Sorry !!!")
+                return null;
+            }
+        }
+        function AddToYardTasksCache(NewYardTaskItem) {
+
+            if (typeof (Storage) !== "undefined") {
+                //Retrieve the YardTasks list from cache
+                var yardTaskList = GetCachedYardTasks();
+                if (typeof (yardTaskList) == "undefined") {
+                    yardTaskList = [];
+                }
+                //Update the list with a new item.
+                yardTaskList.push(NewYardTaskItem)
+                //Save the YardTasks list back to the cache.
+                localStorage.setObj("YardTasks", yardTaskList);
+            }
+            else {
+                console.error("Your browser does not support web storage....Sorry !!!")
+            }
+        }
+        function SaveToYardTaskCache(YardTaskItem) {
+            var yardTaskList = [];
+            if (typeof (Storage) !== "undefined") {
+                //Retrieve the YardTasks list from cache
+                yardTaskList = GetCachedYardTasks();
+
+                //Look for the YardTask to update and save it back to the list.
+                for (var a = 0; a <= yardTaskList.length - 1; a++) {
+                    if (yardTaskList[a].RecordID == YardTaskItem.RecordID) {
+                        yardTaskList[a] = YardTaskItem;
+                        break;
+                    }
+                }
+
+                //Save the YardTasks list back to the cache.
+                localStorage.setObj("YardTasks", yardTaskList);
+            }
+            else {
+                console.error("Your browser does not support web storage....Sorry !!!")
+            }
+        }
+        function DeleteFromYardTasksCache(DeletedYardTask) {
+            var yardTaskList = [];
+            var retYardTasklist = []
+            if (typeof (Storage) !== "undefined") {
+                //Retrieve the YardTasks list from cache
+                yardTaskList = GetCachedYardTasks();
+
+                //Look for the YardTask and delete the item from our loca list (yardTaskList).
+                for (var a = 0; a <= yardTaskList.length - 1; a++) {
+                    if (yardTaskList[a].RecordID != DeletedYardTask.RecordID) {
+                        retYardTasklist.push(yardTaskList[a]);
+                        break;
+                    }
+                }
+
+                //Save the YardTasks list back to the cache.
+                localStorage.setObj("YardTasks", retYardTasklist);
+            }
+            else {
+                console.error("Your browser does not support web storage....Sorry !!!")
+            }
+        }
+        function UpdateGrid(yardTask, RecordAction) {
+
+            // Check the record action
+            if (RecordAction == 'ADD') {
+
+                /* Add record to cache. */
+                AddToYardTasksCache(yardTask);
+
+                /* Add new record to the screen. */
+                UpdateScreenDisplayGrid(yardTask);
+            }
+            else if (RecordAction == 'EDIT') {
+
+                //Update the cache with the modify record.
+                SaveToYardTaskCache(yardTask);
+
+                /* Retrieve an updated YardTasks list from the cache.  */
+                yardTasks = GetCachedYardTasks();
+
+                /* Update the user's screen. */
+                htmldata = ''
+                $('table tbody').html("");
+                for (var a = 0; a <= yardTasks.length; a++) {
+                    var yardTask = yardTasks[a];
+                    if (typeof (yardTask != "undefined")) {
+                        UpdateScreenDisplayGrid(yardTask);
+                    }
+                }
+            }
+            else if (RecordAction == 'DELETE') {
+                //Delete the yard task from the local cache
+                DeleteFromYardTasksCache(yardTask);
+
+                /* Retrieve an updated YardTasks list from the cache.  */
+                yardTasks = GetCachedYardTasks();
+
+                /* Update the user's screen. */
+                if (typeof (yardTasks) != "undefined") {
+                    htmldata = ''
+                    $('#divDataGrid').html("");
+                    for (var a = 0; a <= yardTasks.length; a++) {
+                        var yardTask = yardTasks[a];
+                        if (typeof (yardTask) != "undefined" || (yardTask != null)) {
+                            UpdateScreenDisplayGrid(yardTask);
+                        }
+                    }
+                }
+                else {
+                    //wipe out table
+                    $('#divDataGrid').html("");
+                }
+            }
+        }
+        function UpdateScreenDisplayGrid(yardTask) {
+            htmldata = ''
+            htmldata += "<div class='col-lg-3 col-md-5 col-sm-12'><img src='"+yardTask.ImageURL+"' class='img-responsive' width='250' height='225' alt='test' /></div>"
+            htmldata += "<div class='col-lg-9 col-md-7 col-sm-12'>"
+            htmldata += "<div class='row ' >"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Action</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'><a href='#' onclick=EditItem('" + yardTask.RecordID + "');return false; class='btn btn-success' style='color:white'>Edit</a> &nbsp;|&nbsp;<a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + yardTask.RecordID + "','" + yardTask.ImageName + "');return false;>Delete</a></div>"
+            htmldata += "</div>"
+            htmldata += "<div class='row'>"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Photo Tags</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'>" + yardTask.Tags + "</div>"
+            htmldata += "</div>"
+            htmldata += "<div class='row'>"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Latitude</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'>" + yardTask.Latitude + "</div>"
+            htmldata += "</div>"
+            htmldata += "<div class='row'>"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Longitude</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'>" + yardTask.Longitude + "</div>"
+            htmldata += "</div>"
+            htmldata += "<div class='row'>"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Classified Image</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'>" + yardTask.ImageClassified + "</div>"
+            htmldata += "</div>"
+            htmldata += "<div class='row'>"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Create Date</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'>" + yardTask.CreatedDate + "</div>"
+            htmldata += "</div>"
+            htmldata += "<div class='row'>"
+            htmldata += "<div class='col-lg-6 col-md-5' style='border:1px solid #cecece;'>Modified Date</div>"
+            htmldata += "<div class='col-lg-6 col-md-7' style='border:1px solid #cecece;'>" + yardTask.ModifiedDate + "</div>"
+            htmldata += "</div>"
+            htmldata += "</div>"
             
+            $('#divDataGrid').append(htmldata);
+        }
+        function LoadGrid(UserID) {
+
             var htmldata = null;
             var tblRef = document.getElementById('tbDataTable').getElementsByTagName('tbody')[0];
             tblRef.innerHTML = ''
@@ -93,15 +320,30 @@
             var newCell = null;
             var newEle = null
             var ref = firebase.database().ref("YardTasks");
-            console.log("User ID: "+UserID)
+            var yardTasks = [];
+            var yardTask = {};
             ref.orderByChild("UserID").equalTo(UserID).once("value", function (snapshot) {
                 /* Add the column names.*/
                 snapshot.forEach(function (childSnapshot) {
+                    var YardTask = childSnapshot.val();
+                    var RecordID = childSnapshot.key;
 
-                    var dataObj = childSnapshot.val();
-                    var recID = childSnapshot.key;
-                    htmldata = "<tr><td ><a href='#' onclick=EditItem('" + recID + "');return false; class='btn btn-success' style='color:white'>Edit</a></td><td ><a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + recID + "','" + dataObj.ImageName + "');return false;>Delete</a></td><td ><img src='" + dataObj.ImageURL + "' class='img-responsive' width='175' height='150'  /></td><td >" + dataObj.Tags + "</td><td >" + dataObj.Latitude + "</td><td >" + dataObj.Longitude + "</td><td>"+dataObj.ImageClassified+"</td><td >" + dataObj.CreatedDate + "</td><td >" + dataObj.ModifiedDate + "</td></tr>";
+
+                    htmldata = "<tr><td ><a href='#' onclick=EditItem('" + recID + "');return false; class='btn btn-success' style='color:white'>Edit</a></td><td ><a href='#' class='btn btn-danger' style='color:white' onclick=DeleteItem('" + recID + "','" + dataObj.ImageName + "');return false;>Delete</a></td><td ><img src='" + dataObj.ImageURL + "' class='img-responsive' width='175' height='150'  /></td><td >" + dataObj.Tags + "</td><td >" + dataObj.Latitude + "</td><td >" + dataObj.Longitude + "</td><td>" + dataObj.ImageClassified + "</td><td >" + dataObj.CreatedDate + "</td><td >" + dataObj.ModifiedDate + "</td></tr>";
                     $('table tbody').append(htmldata);
+                    //Save data to an hidden variable.
+                    yardTask = {
+                        RecordID: RecordID,
+                        ImageName: YardTask.ImageName,
+                        ImageURL: YardTask.ImageURL,
+                        Latitude: YardTask.Latitude,
+                        Longitude: YardTask.Longitude,
+                        ImageClassified: YardTask.ImageClassified,
+                        CreatedDate: YardTask.CreatedDate,
+                        ModifiedDate: YardTask.ModifiedDate
+                    };
+                    yardTasks.push(yardTask);
+                    document.getElementById("hndYardTasks").value = yardTasks;
                 });
 
 
@@ -120,7 +362,7 @@
                 var imageRef = storageRef.child(refLoc);
                 imageRef.delete().then(function () {
                     console.log("File has been deleted")
-                    LoadGrid($("hndUserID").val());
+                    //LoadGrid($("hndUserID").val());
                 }).catch(function (error) {
                     alert("We have an error")
                 });
@@ -130,10 +372,9 @@
             }
         }
         function EditItem(RecordKey) {
-            window.location.replace("app/edititem.html?ID="+RecordKey+"")
+            window.location.replace("app/edititem.html?ID=" + RecordKey + "")
         }
-        function SaveUserAccount(UserAccount)
-        {
+        function SaveUserAccount(UserAccount) {
             //Check to see if the user acounts exists.
             var tableRef = firebase.database().ref("Users");
             tableRef.orderByChild("UserID").equalTo(UserAccount.UserID).once("value", function (snapshot) {
@@ -145,10 +386,11 @@
                 }
             });
 
-           
+
         }
         window.addEventListener('load', function () {
             initApp();
+            
             //var userId = firebase.auth().currentUser.uid;
 
             //return firebase.database().ref('/YardTasks/' + userId).once('value').then(function (snapshot) {
@@ -158,89 +400,12 @@
         });
     </script>
     <style type="text/css">
-                
-
-                /*
-        Generic Styling, for Desktops/Laptops
-        */
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                /* Zebra striping */
-                tr:nth-of-type(odd) {
-                    background: #eee;
-                }
-
-                th {
-                    background: #333;
-                    color: white;
-                    font-weight: bold;
-                }
-
-                td, th {
-                    padding: 6px;
-                    border: 1px solid #ccc;
-                    text-align: left;
-                }
-                /* 
-Max width before this PARTICULAR table gets nasty
-This query will take effect for any screen smaller than 760px
-and also iPads specifically.
-*/
-@media 
-only screen and (max-width: 760px),
-(min-device-width: 768px) and (max-device-width: 1024px)  {
-
-	/* Force table to not be like tables anymore */
-	table, thead, tbody, th, td, tr { 
-		display: block; 
-	}
-	
-	/* Hide table headers (but not display: none;, for accessibility) */
-	thead tr { 
-		position: absolute;
-		top: -9999px;
-		left: -9999px;
-	}
-	
-	tr { border: 1px solid #ccc; }
-	
-	td { 
-		/* Behave  like a "row" */
-		border: none;
-		border-bottom: 1px solid #eee; 
-		position: relative;
-		padding-left: 50%; 
-	}
-	
-	td:before { 
-		/* Now like a table header */
-		position: absolute;
-		/* Top/left values mimic padding */
-		top: 6px;
-		left: 6px;
-		width: 45%; 
-		padding-right: 10px; 
-		white-space: nowrap;
-	}
-	
-	/*
-	Label the data*/
-	
-	td:nth-of-type(1):before { content: "Edit"; }
-	td:nth-of-type(2):before { content: "Delete"; }
-	td:nth-of-type(3):before { content: "Photo Entry"; }
-	td:nth-of-type(4):before { content: "Photo Tags"; }
-	td:nth-of-type(5):before { content: "Latitude"; }
-	td:nth-of-type(6):before { content: "Longitude"; }
-	td:nth-of-type(7):before { content: "Created Date"; }
-	td:nth-of-type(8):before { content: "Modified Date"; }
-}
+      
     </style>
 </head>
 <body>
     <input type="hidden" id="hndUserID" value="" />
+    <input type="hidden" id="hndYardTasks" value="" />
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
@@ -281,7 +446,7 @@ only screen and (max-width: 760px),
         <p></p>
     </div>
     <div class="container">
-       
+
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-12">
                 <a href="app/additem.html">Create a new task for YardiAI new task for YardiAI</a>
@@ -293,27 +458,11 @@ only screen and (max-width: 760px),
 
     </div>
     <div class="container">
-        <div class="row">
-            <div >
-                <table id="tbDataTable">
-                    <thead class="cf">
-                        <tr>
-                            <!--<th>Record ID</th>-->
-                            <th class="numeric">Edit</th>
-                            <th class="numeric">Delete</th>
-                            <th>Photo Entry</th>
-                            <th class="text">Photo Tags</th>
-                            <th class="numeric">Latitude</th>
-                            <th class="numeric">Longitude</th>
-                            <th>Classified Image</th>
-                            <th class="numeric">Created Date</th>
-                            <th class="numeric">Modified Date</th>
+        <div class="row" id="divDataGrid">
+            
+            
 
-                        </tr>
-                    </thead>
-                    <tbody id="tbDataRow"></tbody>
-                </table>
-            </div>
+           
         </div>
     </div>
     <!-- /.container -->
