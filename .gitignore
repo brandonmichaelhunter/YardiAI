@@ -3,3 +3,4 @@ YardiBackOfficeManager/YardiAIWeb/prod/*
 YardiBackOfficeManager/YardiAIWeb/functions/*
 .firebaserc
 *.config
+*.log
