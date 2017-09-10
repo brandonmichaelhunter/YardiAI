@@ -9,7 +9,7 @@ class Test_DataManagerTDD(unittest.TestCase):
         #OldImagesList = os.listdir(TestImageLocation)
         #for ImageItem in OldImagesList:
         #    os.unlink("{}\\{}".format(TestImageLocation,ImageItem))
-
+         
         #fbTestLoader = FirebaseTestDataLoader.FirebaseTestDataLoader();
         # Test the LoadTestData method and have it create 10 images.
         #ExpectedCreatedImages = 10
