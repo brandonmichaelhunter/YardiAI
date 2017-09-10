@@ -4,4 +4,5 @@ python:
 install: 
     - pip install unittest2
     - pip install pyrebase
+    - pip install urllib3
 script: python YardiBackOfficeManager/YardiProcessManager/DataManagerTDD.py
