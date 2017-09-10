@@ -3,4 +3,4 @@ python:
     - 3.5
 install:
 	- pip install unittest
-script: python YardiBackOfficeManager\YardiProcessManager\DataManagerTDD.py
+script: python DataManagerTDD.py
