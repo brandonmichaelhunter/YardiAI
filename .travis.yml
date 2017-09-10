@@ -2,4 +2,4 @@ language: python
 python:
     - 3.5
 install: pip install unittest2
-script: python YardiBackOfficeManager/UardiProessManager/DataManagerTDD.py
+script: python YardiBackOfficeManager/YardiProcessManager/DataManagerTDD.py
