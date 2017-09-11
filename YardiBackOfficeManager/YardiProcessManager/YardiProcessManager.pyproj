@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fcf2301e-526c-4967-8059-5cae14711b0d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>DataManagerTDD.py</StartupFile>
+    <StartupFile>Test_DataManager.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -25,7 +25,7 @@
     <Compile Include="DataManager.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataManagerTDD.py">
+    <Compile Include="Test_DataManager.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FirebaseTestDataLoader.py">

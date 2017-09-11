@@ -23,7 +23,7 @@ class DataManager(object):
           "authDomain": "yardiai-4ca2b.firebaseapp.com",
           "databaseURL": "https://yardiai-4ca2b.firebaseio.com",
           "storageBucket": "yardiai-4ca2b.appspot.com",
-          "serviceAccount": "C:\\Users\Brandon\Documents\GitHub\YardiAI\YardiAI\YardiBackOfficeManager\YardiProcessManager\Resources\YardiAI-303194ef51f7.json"
+          "serviceAccount": "Resources\YardiAI-303194ef51f7.json"
         }
         self.firebase = pyrebase.initialize_app(self.config)
         # initalizing logging
