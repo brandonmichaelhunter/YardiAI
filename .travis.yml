@@ -6,4 +6,4 @@ install:
     - pip install pyrebase
     - pip install urllib3
     - pip install geocoder
-script: python YardiBackOfficeManager/YardiProcessManager/DataManagerTDD.py
+script: python YardiBackOfficeManager/YardiProcessManager/Test_DataManager.py

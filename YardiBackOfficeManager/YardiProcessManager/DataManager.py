@@ -24,8 +24,6 @@ class DataManager(object):
           "databaseURL": "https://yardiai-4ca2b.firebaseio.com",
           "storageBucket": "yardiai-4ca2b.appspot.com",
           "serviceAccount": "C:\\Users\Brandon\Documents\GitHub\YardiAI\YardiAI\YardiBackOfficeManager\YardiProcessManager\Resources\YardiAI-303194ef51f7.json"
-
-          
         }
         self.firebase = pyrebase.initialize_app(self.config)
         # initalizing logging
@@ -121,6 +119,7 @@ class DataManager(object):
                 #Save the results back to record in the YardsTasks table.
                 result  = self.PublishResults(recID,results)
                 logging.info("Image {} has been processed.".format(imageName))
+
             else:
                 logging.error("We are not connected to the internet. We will begin cashing queuing tasks")
                 self.WriteTasksToFile(recID,imageName);
