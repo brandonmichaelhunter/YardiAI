@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fcf2301e-526c-4967-8059-5cae14711b0d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Test_DataManager.py</StartupFile>
+    <StartupFile>ChangeFileExtension.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,7 +22,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ChangeFileExtension.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DataManager.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tensorflow\Linear_Model_Graident_Descent_Example.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tensorflow\MNIST_DataSet_Example.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Test_DataManager.py">
@@ -31,9 +40,16 @@
     <Compile Include="FirebaseTestDataLoader.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tensorflow\TF_Estimator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tensorflow\Trainable_Linear_Regression_Model.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="YardiProcessManager.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Tensorflow\" />
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
